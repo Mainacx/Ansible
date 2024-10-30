@@ -1,0 +1,28 @@
+- name: Create directory if not exist
+  file:
+    path: ~/backup
+    state: directory
+    mode: '0755'
+
+- name: Create dump
+  shell: |
+    export PGPASSWORD='{{ replication_password }}'
+    pg_dumpall -U {{ replication_user }} > ~/backup/backup_{{ ansible_date_time.date }}.sql
+  args:
+    executable: /bin/bash
+  register: result  
+  ignore_errors: yes  
+
+- name: Check
+  debug:
+    msg: "Success!"
+  when: result.rc | default(-1) == 0  
+
+- name: Skip if error
+  debug:
+    msg: "Connection error to PostgreSQL. Skipping replication."
+  when: result.rc | default(-1) != 0  
+
+- name: Delete old copies (older than 7 days)
+  command: >
+    find ~/backup -type f -mtime +7 -exec rm {} \;

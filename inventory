@@ -1,0 +1,4 @@
+[database]
+localhost ansible_connection=local
+host_for_replication ansible_host={{ansible_host}} ansible_user={{replication_user}} ansible_password={{replication_password}}
+

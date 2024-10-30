@@ -1,0 +1,41 @@
+- name: Install the necessary packages
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - openssh-server
+      - sshpass
+    state: present
+    update_cache: yes
+
+- name: Create a directory for the PostgreSQL repository key
+  file:
+    path: /usr/share/postgresql-common/pgdg
+    state: directory
+
+- name: Download the PostgreSQL repository key
+  get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    mode: '0644'
+    validate_certs: yes
+
+- name: Add the PostgreSQL repository
+  lineinfile:
+    path: /etc/apt/sources.list.d/pgdg.list
+    line: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    create: yes
+
+- name: Update the package index
+  apt:
+    update_cache: yes
+
+- name: Install PostgreSQL
+  apt:
+    name: postgresql-16
+    state: present
+
+- name: Install psycopg2
+  apt:
+    name: python3-psycopg2
+    state: present

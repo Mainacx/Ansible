@@ -1,0 +1,43 @@
+- name: Configure pg_hba.conf for general access
+  lineinfile:
+    path: /etc/postgresql/16/main/pg_hba.conf
+    line: "host all all 0.0.0.0/0 md5"
+    state: present
+
+- name: Configure pg_hba.conf for 
+  lineinfile:
+    path: /etc/postgresql/16/main/pg_hba.conf
+    line: "host replication {{ replication_user }} 0.0.0.0/0 md5"
+    state: present
+
+- name: Configure postgresql.conf to listen
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: '^#listen_addresses'
+    line: "listen_addresses = '*'"
+
+- name: Configure replication in postgresql.conf
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: '^{{ item.key }}'
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - { key: "wal_level", value: "replica" }
+    - { key: "max_wal_senders", value: "5"}
+
+- name: Configure logging settings
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: '^log_directory'
+    line: "log_directory = '~/backup'"
+
+- name: Configure log settings for replication
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: '^log_replication_commands'
+    line: "log_replication_commands = on"
+
+- name: Restart postgres
+  service:
+    name: postgresql
+    state: restarted

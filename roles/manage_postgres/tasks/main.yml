@@ -1,0 +1,10 @@
+- name: Enable Postgresql
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Restart Postgresql when the configuration changes
+  service:
+    name: postgresql
+    state: restarted
